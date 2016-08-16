@@ -102,6 +102,16 @@ class ContestsDAO extends ContestsDAOBase
         return $ar;
     }
 
+    final public static function _getContestEndCheck($activos) {
+        if ($activos < 0) {
+            return '';
+        } else if ($activos == 0) {
+            return 'WHERE original_finish_time <= NOW()';
+        } else { // $activos > 0
+            return 'WHERE original_finish_time > NOW()';
+        }
+    }
+
     /**
      * Regresa todos los concursos que un usuario puede ver.
      *
@@ -127,14 +137,20 @@ class ContestsDAO extends ContestsDAOBase
      * @global type $conn
      * @param int $user_id
      * @param int $pagina
-     * @param int $columnas_por_pagina
+     * @param int $renglones_por_pagina
+     * @param int $activos Si < 0, regresa todo, si 0 regresa pasados, y si > 0 regresa activos
      * @return array
      */
-    final public static function getAllContestsForUser($user_id, $pagina = 1, $renglones_por_pagina = 1000) {
+    final public static function getAllContestsForUser(
+        $user_id,
+        $pagina = 1,
+        $renglones_por_pagina = 1000,
+        $activos = -1
+    ) {
         $offset = ($pagina - 1) * $renglones_por_pagina;
 
         $columns = ContestsDAO::$getContestsColumns;
-
+        $end_check = ContestsDAO::_getContestEndCheck($activos);
         $sql = "
                 (
                      SELECT
@@ -203,7 +219,7 @@ class ContestsDAO extends ContestsDAOBase
                      WHERE
                          Public = 1
                  )
-
+                 $end_check
                  ORDER BY
                      CASE WHEN original_finish_time > NOW() THEN 1 ELSE 0 END DESC,
                      `recommended` DESC,
@@ -226,8 +242,13 @@ class ContestsDAO extends ContestsDAOBase
         return $allData;
     }
 
-    final public static function getAllPublicContests($pagina = 1, $renglones_por_pagina = 1000) {
+    final public static function getAllPublicContests(
+        $pagina = 1,
+        $renglones_por_pagina = 1000,
+        $activos = -1
+    ) {
         $offset = ($pagina - 1) * $renglones_por_pagina;
+        $end_check = ContestsDAO::_getContestEndCheck($activos);
 
         $columns = ContestsDAO::$getContestsColumns;
 
@@ -238,6 +259,7 @@ class ContestsDAO extends ContestsDAOBase
                     Contests
                 WHERE
                     Public = 1
+                $end_check
                 ORDER BY
                     CASE WHEN original_finish_time > NOW() THEN 1 ELSE 0 END DESC,
                     `recommended` DESC,
@@ -259,16 +281,22 @@ class ContestsDAO extends ContestsDAOBase
         return $allData;
     }
 
-    final public static function getAllContests($pagina = 1, $renglones_por_pagina = 1000) {
+    final public static function getAllContests(
+        $pagina = 1,
+        $renglones_por_pagina = 1000,
+        $activos = -1
+    ) {
         $offset = ($pagina - 1) * $renglones_por_pagina;
 
         $columns = ContestsDAO::$getContestsColumns;
+        $end_check = ContestsDAO::_getContestEndCheck($activos);
 
         $sql = "
                 SELECT
                     $columns
                 FROM
                     Contests
+                $end_check
                 ORDER BY
                     CASE WHEN original_finish_time > NOW() THEN 1 ELSE 0 END DESC,
                     `recommended` DESC,
