@@ -1,4 +1,4 @@
-# Bienvenido a omegaUp!
+﻿#  Bienvenido a omegaUp!
 
 [![Build Status](https://travis-ci.org/omegaup/omegaup.svg?branch=master)](https://travis-ci.org/omegaup/omegaup)
 
